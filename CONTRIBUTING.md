@@ -6,12 +6,14 @@
 2. Download git from <https://git-scm.com/download/win>
 3. Open the exe file that downloads when you open the site
 4. Click next till you get to this screen:
+
 ![Git installer text editor choose screen](/static/choose_text_editor.png)
-5. Choose a text editor other then vim, there are many options, visual studio code or notepad++ are good choices
+
+5. Choose a text editor other then vim, there are many options, but nano, visual studio code or notepad++(you will need to download these separately first at <https://code.visualstudio.com/download>, <https://notepad-plus-plus.org/downloads> respectively) are good choices
 
 ## Git Setup
 
-1. When you download git it will download something called git-bash open it
+1. When you download git it will download something called git-bash open it (search for it in the search bar)
 2. First set up your details with:
 
 ```console
@@ -67,7 +69,7 @@ $ git stage -A
 $ git commit -a -m "your change"
 ```
 
-2. To add your changes to the remote repository you are going to use:
+2. To add your changes to the remote repository you are going to use (you need to be a contributer to do this so send me your github username):
 
 ```console
 $ git push origin master
