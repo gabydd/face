@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal
 
 
 class ChessPiece:
@@ -9,12 +9,12 @@ class ChessPiece:
     """
 
     def __init__(
-        self, file: str, rank: str, colour: Literal["white", "black"], piece: str
+        self, file: str, rank: str, colour: Literal["white", "black"], type: str
     ) -> None:
         self.file = file
         self.rank = rank
         self.colour = colour
-        self.piece = piece
+        self.type = type
 
 
 class Rook(ChessPiece):
