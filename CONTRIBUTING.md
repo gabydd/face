@@ -60,6 +60,7 @@ $ cd dev # go into the newly created directory
 
 ```console
 $ git clone git@github.com:YOUR_GITHUB_USERNAME/face.git
+$ cd face
 $ git remote add upstream git@github.com:gabydinnerdavid/face.git
 ```
 
@@ -74,13 +75,13 @@ $ git add -A
 $ git commit -a -m "your change"
 ```
 
-2. To add your changes your remote repository you are going to use
+2. To add your changes your remote repository you are going to use (note you have to commit all your changes before you can do this)
 
 ```console
 $ git push origin master
 ```
 
-3. When you want to sync your local code with the remote repository you are going to use (note you have to commit all your changes before you can do this):
+3. When you want to sync your local code with the upstream remote repository you are going to use (note you have to commit all your changes before you can do this):
 
 ```console
 $ git pull upstream master
