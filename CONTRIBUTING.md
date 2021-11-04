@@ -60,6 +60,7 @@ $ cd dev # go into the newly created directory
 
 ```console
 $ git clone git@github.com:YOUR_GITHUB_USERNAME/face.git
+$ cd face
 $ git remote add upstream git@github.com:gabydinnerdavid/face.git
 ```
 
