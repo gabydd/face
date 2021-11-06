@@ -1,8 +1,8 @@
 from typing import Union, cast
 import copy
-
+from pprint import pprint
 import pieces
-from chess_types import BoardList, FileType, RankType, WhereType, ColourType
+from chess_types import FileType, RankType, WhereType, ColourType
 
 STARTING_POSITIONS = (
     pieces.Rook,
@@ -14,19 +14,21 @@ STARTING_POSITIONS = (
     pieces.Knight,
     pieces.Rook,
 )
-letters = ("a", "b", "c", "d", "e", "f", "g", "h")
-a, b, c, d, e, f, g, h = range(8)
+a, b, c, d, e, f, g, h = cast(list[FileType], [0, 1, 2, 3, 4, 5, 6, 7])
 
-class ChessBoard:
+
+class ChessBoard(pieces.BaseBoard):
     def __init__(self) -> None:
         self.turn: ColourType = "w"
-        self.board: BoardList = [[None] * 9 for _ in range(8)]
+        self.board: list[list[Union[None, pieces.ChessPiece]]] = [
+            [None] * 9 for _ in range(8)
+        ]
         self.pieces = self.starting_pieces()
         self.starting_board()
 
     def starting_pieces(self) -> list[pieces.ChessPiece]:
         pieces_list = []
-        for file in range(9):
+        for file in range(8):
             file = cast(FileType, file)
             pieces_list.append(STARTING_POSITIONS[file](file, 1, "w", self))
             pieces_list.append(pieces.Pawn(file, 2, "w", self))
@@ -35,7 +37,7 @@ class ChessBoard:
         return pieces_list
 
     def starting_board(self):
-        for file in range(9):
+        for file in range(8):
             for rank in range(1, 9):
                 piece_set = False
                 for piece in self.pieces:
@@ -77,44 +79,52 @@ class ChessBoard:
         self,
         colour: ColourType,
         move: Union[tuple[pieces.ChessPiece, FileType, RankType], None] = None,
-    ):
+    ) -> bool:
+        other = self.copy()
         if move:
-            board = self.board.copy()
-            board[move[0].file][move[0].rank] = None
-            piece = copy.deepcopy(move[0])
+            other.board[move[0].file][move[0].rank] = None
+            piece = move[0].copy()
             piece.file = move[1]
             piece.rank = move[2]
-            board[move[1]][move[2]] = piece
-            pieces_ = copy.deepcopy(self.pieces)
+            other.board[move[1]][move[2]] = piece
+            pieces_ = copy.copy(self.pieces)
             for p in pieces_:
                 if p.file == move[0].file and p.rank == move[0].rank:
                     pieces_[pieces_.index(p)] = piece
-
-        else:
-            board = self.board.copy()
-            pieces_ = copy.deepcopy(self.pieces)
         king = cast(
             pieces.King,
             self.get_piece(
-                {"colour": colour, "type": "K", "rank": None, "file": None}, pieces_
+                {"colour": colour, "type": "K", "rank": None, "file": None},
+                other.pieces,
             ),
         )
         for piece in self.get_pieces(
             {
-                "colour": colour if colour == "w" else "b",
+                "colour": "b" if colour == "w" else colour,
                 "type": None,
                 "rank": None,
                 "file": None,
             },
-            pieces_,
+            other.pieces,
         ):
-            if (king.rank, king.file) in piece.allowed_moves(check=False):
+            allowed = piece.allowed_moves(check=False)
+            if (king.rank, king.file) in allowed:
                 return True
+        return False
+
+    def copy(self):
+        copy_board = ChessBoard()
+        copy_board.board = [[None] * 9 for _ in range(8)]
+        for piece in self.pieces:
+            copy_board.pieces.append(piece.copy())
+        for piece in copy_board.pieces:
+            copy_board.board[piece.file][piece.rank] = piece
+        copy_board.turn = self.turn
+        return copy_board
 
 
 board = ChessBoard()
-piece = board.board[a][3]
+piece = board.board[b][1]
 if piece:
-    board.board[a][4] = piece
-    board.board[piece.file][piece.rank] = None
-    piece.rank = 4
+    piece.move(a, 3)
+    print(board.board[a][3] is piece)

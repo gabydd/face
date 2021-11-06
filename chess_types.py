@@ -1,5 +1,4 @@
 from typing import Literal, TypedDict, Union
-from pieces import ChessPiece
 
 FileType = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 RankType = Literal[1, 2, 3, 4, 5, 6, 7, 8]
@@ -13,5 +12,3 @@ WhereType = TypedDict(
         "file": Union[None, FileType],
     },
 )
-
-BoardList = list[list[Union[None, ChessPiece]]]
