@@ -1,5 +1,6 @@
 import abc
 from typing import Any, Union, cast
+from __future__ import annotations
 
 from chess_types import FileType, RankType, ColourType, WhereType
 
@@ -18,7 +19,7 @@ class ChessPiece(abc.ABC):
     rank: RankType
     colour: ColourType
     type: str
-    board: Any
+    board: BaseBoard
 
     @abc.abstractmethod
     def __init__(
@@ -43,8 +44,7 @@ class ChessPiece(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def copy(self) -> Any:
-        ...
+    def copy(self) -> ChessPiece: ...
 
 
 class BaseBoard(abc.ABC):
@@ -93,7 +93,7 @@ class Rook(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.type = "R"
-        self.board: BaseBoard = board
+        self.board = board
 
     def allowed(self, file: FileType, rank: RankType, check: bool = True) -> bool:
         ...
@@ -132,7 +132,7 @@ class Knight(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.type = "N"
-        self.board: BaseBoard = board
+        self.board = board
 
     def allowed(self, file: int, rank: int, check: bool = True) -> bool:
         on_board = a <= file <= h and 1 <= rank <= 8
@@ -228,7 +228,7 @@ class Queen(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.type = "Q"
-        self.board: BaseBoard = board
+        self.board = board
 
     def allowed(self, file: FileType, rank: RankType, check: bool = True) -> bool:
         ...
@@ -256,7 +256,7 @@ class King(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.type = "K"
-        self.board: BaseBoard = board
+        self.board = board
 
     def allowed(self, file: FileType, rank: RankType, check: bool = True) -> bool:
         ...
@@ -285,7 +285,7 @@ class Pawn(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.type = "P"
-        self.board: BaseBoard = board
+        self.board = board
 
     def allowed(self, file: FileType, rank: RankType, check: bool = True) -> bool:
         ...
