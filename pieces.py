@@ -1,6 +1,7 @@
+from __future__ import annotations
 import abc
 from typing import Any, Union, cast
-from __future__ import annotations
+
 
 from chess_types import FileType, RankType, ColourType, WhereType
 
@@ -44,7 +45,8 @@ class ChessPiece(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def copy(self) -> ChessPiece: ...
+    def copy(self) -> ChessPiece:
+        ...
 
 
 class BaseBoard(abc.ABC):
@@ -140,10 +142,6 @@ class Knight(ChessPiece):
         valid_move = False
         not_own_colour = True if not on_square else on_square.colour != self.colour
         not_check = True
-        if check and on_board:
-            not_check = not self.board.is_check(
-                self.colour, (self, cast(FileType, file), cast(RankType, rank))
-            )
         for file_mod, rank_mods in (
             (-2, (-1, 1)),
             (2, (-1, 1)),
@@ -153,6 +151,10 @@ class Knight(ChessPiece):
             for rank_mod in rank_mods:
                 if self.file + file_mod == file and self.rank + rank_mod == rank:
                     valid_move = True
+        if check and on_board and not_own_colour and valid_move:
+            not_check = not self.board.is_check(
+                self.colour, (self, cast(FileType, file), cast(RankType, rank))
+            )
         return valid_move and on_board and not_own_colour and not_check
 
     def allowed_moves(self, check: bool = True) -> list[tuple[FileType, RankType]]:
@@ -174,13 +176,17 @@ class Knight(ChessPiece):
 
     def move(self, file: FileType, rank: RankType) -> bool:
         moved = False
-        if (file, rank) in self.allowed_moves() and self.board.turn == self.colour:
+        if self.allowed(file, rank) and self.board.turn == self.colour:
             self.board.board[self.file][self.rank] = None
             in_spot = self.board.board[file][rank]
             if type(in_spot) == ChessPiece:
                 del in_spot
             self.board.board[file][rank] = self
-            self.board.turn = "b" if self.colour == "w" else self.colour
+            self.file = file
+            self.rank = rank
+            self.board.turn = "b" if self.colour == "w" else "w"
+
+            moved = True
 
         return moved
 
