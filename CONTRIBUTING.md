@@ -21,7 +21,7 @@ $ git config --global user.email "youremail@email.com"
 ```
 
 ```console
-$ git config --global user.email "Your Name"
+$ git config --global user.name "Your Name"
 ```
 
 3. Then generate a ssh key for authenticating to github with:
