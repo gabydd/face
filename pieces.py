@@ -174,12 +174,13 @@ class Knight(ChessPiece):
 
     def move(self, file: FileType, rank: RankType) -> bool:
         moved = False
-        if (file, rank) in self.allowed_moves():
+        if (file, rank) in self.allowed_moves() and self.board.turn == self.colour:
             self.board.board[self.file][self.rank] = None
             in_spot = self.board.board[file][rank]
             if type(in_spot) == ChessPiece:
                 del in_spot
             self.board.board[file][rank] = self
+            self.board.turn = "b" if self.colour == "w" else self.colour
 
         return moved
 

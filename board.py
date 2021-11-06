@@ -121,10 +121,3 @@ class ChessBoard(pieces.BaseBoard):
             copy_board.board[piece.file][piece.rank] = piece
         copy_board.turn = self.turn
         return copy_board
-
-
-board = ChessBoard()
-piece = board.board[b][1]
-if piece:
-    piece.move(a, 3)
-    print(board.board[a][3] is piece)
