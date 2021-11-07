@@ -149,13 +149,15 @@ class ChessBoard(pieces.BaseBoard):
             if (king.file, king.rank) in allowed:
                 return True
         return False
-    
+
     def change_turn(self) -> None:
         self.turn = "b" if self.turn == "w" else "w"
         in_check = self.is_check(self.turn)
         if in_check:
             self.checkmate = True
-            for piece in self.get_pieces({"colour": self.turn, "file": None, "rank": None, "symbol": None}):
+            for piece in self.get_pieces(
+                {"colour": self.turn, "file": None, "rank": None, "symbol": None}
+            ):
                 for move in piece.allowed_moves():
                     if not self.is_check(self.turn, (piece, *move)):
                         self.checkmate = False
@@ -175,11 +177,3 @@ class ChessBoard(pieces.BaseBoard):
             copy_board.board[piece.file][piece.rank] = piece
         copy_board.turn = self.turn
         return copy_board
-
-board = ChessBoard()
-board.board[a][2].rank = 4
-board.board[a][4] = board.board[a][2]
-board.board[a][2] = None
-board.board[b][1].move(*board.board[b][1].allowed_moves()[0])
-board.change_turn()
-print(board.board[a][1].move(b, 1))
