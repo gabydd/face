@@ -149,13 +149,15 @@ class ChessBoard(pieces.BaseBoard):
             if (king.file, king.rank) in allowed:
                 return True
         return False
-    
+
     def change_turn(self) -> None:
         self.turn = "b" if self.turn == "w" else "w"
         in_check = self.is_check(self.turn)
         if in_check:
             self.checkmate = True
-            for piece in self.get_pieces({"colour": self.turn, "file": None, "rank": None, "symbol": None}):
+            for piece in self.get_pieces(
+                {"colour": self.turn, "file": None, "rank": None, "symbol": None}
+            ):
                 for move in piece.allowed_moves():
                     if not self.is_check(self.turn, (piece, *move)):
                         self.checkmate = False
