@@ -92,15 +92,11 @@ class BaseBoard(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_pieces(
-        self, where: WhereType, piece_list: list[ChessPiece]
-    ) -> list[ChessPiece]:
+    def get_pieces(self, where: WhereType) -> list[ChessPiece]:
         ...
 
     @abc.abstractmethod
-    def get_piece(
-        self, where: WhereType, piece_list: list[ChessPiece]
-    ) -> Union[ChessPiece, None]:
+    def get_piece(self, where: WhereType) -> Union[ChessPiece, None]:
         ...
 
     @abc.abstractmethod
@@ -129,20 +125,98 @@ class Rook(ChessPiece):
         self.colour = colour
         self.symbol = "R"
         self.board = board
+        if self.file == a and (self.rank == 1 or self.rank == 8):
+            self.position = "far"
+        elif self.file == h and (self.rank == 1 or self.rank == 8):
+            self.position = "close"
+        else:
+            self.position = None
 
-    def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:
-        ...
+    def allowed(self, file: int, rank: int, check: bool = True) -> bool:
+        on_board = a <= file <= h and 1 <= rank <= 8
+        on_square = on_board and self.board.board[file][rank]
+        valid_move = False
+        not_own_colour = True if not on_square else on_square.colour != self.colour
+        not_check = True
+
+        clear_file = True
+        clear_rank = True
+        for piece in self.board.pieces:
+            between_rank = (
+                rank < piece.rank < self.rank or self.rank < piece.rank < rank
+            )
+            between_file = (
+                file < piece.file < self.file or self.file < piece.file < file
+            )
+
+            if piece.file == file and between_rank:
+                clear_rank = False
+            elif piece.rank == rank and between_file:
+                clear_file = False
+        valid_move = (
+            self.file == file and clear_rank or self.rank == rank and clear_file
+        )
+
+        # Make sure that check method is only called on correct moves
+        if check and on_board and not_own_colour and valid_move:
+            not_check = not self.board.is_check(
+                self.colour, (self, cast(File, file), cast(Rank, rank))
+            )
+        return valid_move and on_board and not_own_colour and not_check
 
     def allowed_moves(self, check: bool = True) -> list[tuple[File, Rank]]:
-        return []
+        moves = []
+        for file_mod in range(a - self.file, h - self.file + 1):
+            if file_mod == 0:
+                continue
+            if self.allowed(self.file + file_mod, self.rank, check=check):
+                moves.append((self.file + file_mod, self.rank))
+        for rank_mod in range(1 - self.file, 8 - self.file):
+            if rank_mod == 0:
+                continue
+            if self.allowed(self.file, self.rank + rank_mod, check=check):
+                moves.append((self.file, self.rank + rank_mod))
+        return moves
 
     def move(self, file: File, rank: Rank) -> bool:
         moved = False
+        if (
+            self.allowed(file, rank)
+            and self.board.turn == self.colour
+            and not self.board.checkmate
+        ):
+            self.board.board[self.file][self.rank] = None
+            in_spot = self.board.board[file][rank]
+            if type(in_spot) == ChessPiece:
+                del in_spot
+            self.board.board[file][rank] = self
+            self.file = file
+            self.rank = rank
+            if self.position:
+                king = cast(
+                    King,
+                    self.board.get_piece(
+                        {
+                            "colour": self.colour,
+                            "symbol": "K",
+                            "file": None,
+                            "rank": None,
+                        }
+                    ),
+                )
+                if self.position == "close":
+                    king.castle_close = False
+                elif self.position == "far":
+                    king.castle_far = False
+
+            self.board.change_turn()
+            moved = True
         return moved
 
     def copy(self):
-
-        return Rook(self.file, self.rank, self.colour, self.board)
+        rook_copy = Rook(self.file, self.rank, self.colour, self.board)
+        rook_copy.position = self.position
+        return rook_copy
 
 
 class Knight(ChessPiece):
@@ -176,10 +250,12 @@ class Knight(ChessPiece):
         valid_move = False
         not_own_colour = True if not on_square else on_square.colour != self.colour
         not_check = True
+
         for file_mod, rank_mods in KNIGHT_MOVES:
             for rank_mod in rank_mods:
                 if self.file + file_mod == file and self.rank + rank_mod == rank:
                     valid_move = True
+
         # Make sure that check method is only called on correct moves
         if check and on_board and not_own_colour and valid_move:
             not_check = not self.board.is_check(
@@ -201,7 +277,11 @@ class Knight(ChessPiece):
 
     def move(self, file: File, rank: Rank) -> bool:
         moved = False
-        if self.allowed(file, rank) and self.board.turn == self.colour and not self.board.checkmate:
+        if (
+            self.allowed(file, rank)
+            and self.board.turn == self.colour
+            and not self.board.checkmate
+        ):
             self.board.board[self.file][self.rank] = None
             in_spot = self.board.board[file][rank]
             if type(in_spot) == ChessPiece:
@@ -210,7 +290,6 @@ class Knight(ChessPiece):
             self.file = file
             self.rank = rank
             self.board.change_turn()
-
             moved = True
 
         return moved
@@ -288,6 +367,8 @@ class King(ChessPiece):
         self.colour = colour
         self.symbol = "K"
         self.board = board
+        self.castle_close = True
+        self.castle_far = True
 
     def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:
         ...
@@ -300,8 +381,10 @@ class King(ChessPiece):
         return moved
 
     def copy(self):
-
-        return King(self.file, self.rank, self.colour, self.board)
+        king_copy = King(self.file, self.rank, self.colour, self.board)
+        king_copy.castle_close = self.castle_close
+        king_copy.castle_far = self.castle_far
+        return king_copy
 
 
 class Pawn(ChessPiece):
