@@ -38,7 +38,7 @@ class ChessPiece(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:
+    def allowed(self, file: int, rank: int, check: bool = True) -> bool:
         """Return if the file and rank provided is an allowed move for the piece.
 
         Because this method calls the ChessBoard.is_check method,
@@ -312,14 +312,78 @@ class Bishop(ChessPiece):
         self.symbol = "B"
         self.board: BaseBoard = board
 
-    def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:
-        ...
+    def allowed(self, file: int, rank: int, check: bool = True) -> bool:
+        on_board = a <= file <= h and 1 <= rank <= 8
+        on_square = on_board and self.board.board[file][rank]
+        valid_move = abs(self.file - file) == abs(self.rank - rank)
+        not_own_colour = True if not on_square else on_square.colour != self.colour
+        not_check = True
+
+        # towards top right
+        if file > self.file and rank > self.rank:
+            for i in range(1, min(file - self.file, rank - self.rank) + 1):
+                if self.board.board[self.file + 1][self.rank + 1]:
+                    valid_move = False
+        # towards top left
+        if file < self.file and rank > self.rank:
+            for i in range(1, min(self.file, 8 - self.rank) + 1):
+                if self.board.board[self.file - 1][self.rank + 1]:
+                    valid_move = False
+        # towards bottom right
+        if file > self.file and rank < self.rank:
+            for i in range(1, min(h - self.file, self.rank) + 1):
+                if self.board.board[self.file + 1][self.rank - 1]:
+                    valid_move = False
+        # towards bottom left
+        if file < self.file and rank < self.rank:
+            for i in range(1, min(self.file, self.rank) + 1):
+                if self.board.board[self.file - 1][self.rank - 1]:
+                    valid_move = False
+
+        # Make sure that check method is only called on correct moves
+        if check and on_board and not_own_colour and valid_move:
+            not_check = not self.board.is_check(
+                self.colour, (self, cast(File, file), cast(Rank, rank))
+            )
+        return valid_move and on_board and not_own_colour and not_check
 
     def allowed_moves(self, check: bool = True) -> list[tuple[File, Rank]]:
-        return []
+        moves = []
+        # towards top right
+        for i in range(1, min(h - self.file, 8 - self.rank) + 1):
+            if self.allowed(self.file + i, self.rank + i, check=check):
+                moves.append((self.file + i, self.rank + i))
+        # towards top left
+        for i in range(1, min(self.file, 8 - self.rank) + 1):
+            if self.allowed(self.file - i, self.rank + i, check=check):
+                moves.append((self.file - i, self.rank + i))
+        # towards bottom right
+        for i in range(1, min(h - self.file, self.rank) + 1):
+            if self.allowed(self.file + i, self.rank - i, check=check):
+                moves.append((self.file + i, self.rank - i))
+        # towards bottom left
+        for i in range(1, min(self.file, self.rank) + 1):
+            if self.allowed(self.file - i, self.rank - i, check=check):
+                moves.append((self.file - i, self.rank - i))
+        return cast(list[tuple[File, Rank]], moves)
 
     def move(self, file: File, rank: Rank) -> bool:
         moved = False
+        moved = False
+        if (
+            self.allowed(file, rank)
+            and self.board.turn == self.colour
+            and not self.board.checkmate
+        ):
+            self.board.board[self.file][self.rank] = None
+            in_spot = self.board.board[file][rank]
+            if type(in_spot) == ChessPiece:
+                del in_spot
+            self.board.board[file][rank] = self
+            self.file = file
+            self.rank = rank
+            self.board.change_turn()
+            moved = True
         return moved
 
     def copy(self):
