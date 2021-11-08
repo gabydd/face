@@ -25,6 +25,7 @@ class ChessPiece(abc.ABC):
     rank: Rank
     colour: ColourString
     symbol: SymbolString
+    unicode: str
     board: BaseBoard
 
     @abc.abstractmethod
@@ -124,6 +125,7 @@ class Rook(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "R"
+        self.unicode = "\u2656" if colour == "w" else "\u265c"
         self.board = board
         if self.file == a and (self.rank == 1 or self.rank == 8):
             self.position = "far"
@@ -242,6 +244,7 @@ class Knight(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "N"
+        self.unicode = "\u2658" if colour == "w" else "\u265e"
         self.board = board
 
     def allowed(self, file: int, rank: int, check: bool = True) -> bool:
@@ -310,6 +313,7 @@ class Bishop(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "B"
+        self.unicode = "\u2657" if colour == "w" else "\u265d"
         self.board: BaseBoard = board
 
     def allowed(self, file: int, rank: int, check: bool = True) -> bool:
@@ -402,6 +406,7 @@ class Queen(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "Q"
+        self.unicode = "\u2655" if colour == "w" else "\u265b"
         self.board = board
 
     def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:
@@ -430,6 +435,7 @@ class King(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "K"
+        self.unicode = "\u2654" if colour == "w" else "\u265a"
         self.board = board
         self.castle_close = True
         self.castle_far = True
@@ -463,6 +469,7 @@ class Pawn(ChessPiece):
         self.rank = rank
         self.colour = colour
         self.symbol = "P"
+        self.unicode = "\u2659" if colour == "w" else "\u265f"
         self.board = board
 
     def allowed(self, file: File, rank: Rank, check: bool = True) -> bool:

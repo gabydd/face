@@ -2,6 +2,9 @@ from typing import Union, cast
 import pieces
 from chess_types import File, Rank, WhereType, ColourString
 
+ansi = "\33[0;30;{}m{}\33[0;0m"
+black_bg = "100"
+white_bg = "47"
 STARTING_POSITIONS = (
     pieces.Rook,
     pieces.Knight,
@@ -12,7 +15,8 @@ STARTING_POSITIONS = (
     pieces.Knight,
     pieces.Rook,
 )
-a, b, c, d, e, f, g, h = cast(list[File], [0, 1, 2, 3, 4, 5, 6, 7])
+files = a, b, c, d, e, f, g, h = cast(list[File], [0, 1, 2, 3, 4, 5, 6, 7])
+ranks = range(1,9)
 
 
 class ChessBoard(pieces.BaseBoard):
@@ -177,3 +181,23 @@ class ChessBoard(pieces.BaseBoard):
             copy_board.board[piece.file][piece.rank] = piece
         copy_board.turn = self.turn
         return copy_board
+
+    def __str__(self) -> str:
+        board_str = ""
+        for rank in reversed(ranks):
+            for _ in range(1):
+                for file in files:
+                    piece = self.board[file][rank]
+                    if file % 2 == 0 and rank % 2 == 1 or file % 2 == 1 and rank % 2 == 0:
+                        bg_ansi = black_bg
+                    else:
+                        bg_ansi = white_bg
+                    if not piece:
+                        board_str += ansi.format(bg_ansi, " ")*3
+                    else:
+                        board_str += ansi.format(bg_ansi, " ") + ansi.format(
+                            bg_ansi,
+                            piece.unicode,
+                        ) + ansi.format(bg_ansi, " ")
+            board_str += "\n"
+        return board_str
